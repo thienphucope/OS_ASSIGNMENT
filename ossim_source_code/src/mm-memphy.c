@@ -155,14 +155,35 @@ int MEMPHY_get_freefp(struct memphy_struct *mp, int *retfpn)
    return 0;
 }
 
-int MEMPHY_dump(struct memphy_struct * mp)
-{
-    /*TODO dump memphy contnt mp->storage 
-     *     for tracing the memory content
-     */
+// int MEMPHY_dump(struct memphy_struct * mp)
+// {
+//     /*TODO dump memphy contnt mp->storage 
+//      *     for tracing the memory content
+//      */
 
+//     return 0;
+// }
+
+#include <stdio.h>
+
+/*
+ *  MEMPHY_dump - dump memory content for tracing
+ *  @mp: memphy struct
+ */
+int MEMPHY_dump(struct memphy_struct *mp)
+{
+    if (mp == NULL || mp->storage == NULL) {
+        printf("Memory is not initialized.\n");
+        return -1;
+    }
+
+    printf("Memory Dump:\n");
+    for (int i = 0; i < mp->maxsz; i++) {
+        printf("Address %d: %02X\n", i, mp->storage[i]);
+    }
     return 0;
 }
+
 
 int MEMPHY_put_freefp(struct memphy_struct *mp, int fpn)
 {
