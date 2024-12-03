@@ -108,6 +108,9 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   /* Increase the limit */
   inc_vma_limit(caller, vmaid, inc_sz, &inc_limit_ret);
 
+  /* Update sbrk to the new limit */
+  cur_vma->sbrk = inc_limit_ret;
+
   /* Retry allocation after increasing VMA limit */
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0) 
   {
@@ -118,6 +121,9 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     *alloc_addr = rgnode.rg_start;
     return 0;
   }
+
+  /* If allocation still fails, restore the old sbrk */
+  cur_vma->sbrk = old_sbrk;
 
   return -1;
 }
@@ -493,7 +499,7 @@ int find_victim_page(struct mm_struct *mm, int *retpgn)
 
   /* Use FIFO (First-In-First-Out) page replacement strategy */
   *retpgn = pg->pgn;
-  mm->fifo_pgn = pg->np;
+  mm->fifo_pgn = pg->pg_next;
 
   free(pg);
 
