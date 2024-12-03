@@ -92,19 +92,19 @@
 /* Extract SWAPTYPE */
 #define PAGING_FPN(x)  GETVAL(x,PAGING_FPN_MASK,PAGING_ADDR_FPN_LOBIT)
 
-/* Memory range operator */
-/* TODO implement the INCLUDE checking mechanism - currently dummy op only */
-#define INCLUDE(x1,x2,y1,y2) (0)
-/* TODO implement the OVERLAP checking mechanism - currently dummy op only */
-#define OVERLAP(x1,x2,y1,y2) (1)
+// /* Memory range operator */
+// /* TODO implement the INCLUDE checking mechanism - currently dummy op only */
+// #define INCLUDE(x1,x2,y1,y2) (0)
+// /* TODO implement the OVERLAP checking mechanism - currently dummy op only */
+// #define OVERLAP(x1,x2,y1,y2) (1)
 
 
 
-// /* Check if range [y1, y2] is completely included within range [x1, x2] */
-// #define INCLUDE(x1, x2, y1, y2) ((y1 >= x1) && (y2 <= x2))
+/* Check if range [y1, y2] is completely included within range [x1, x2] */
+#define INCLUDE(x1, x2, y1, y2) ((y1 >= x1) && (y2 <= x2))
 
-// /* Check if ranges [x1, x2] and [y1, y2] overlap */
-// #define OVERLAP(x1, x2, y1, y2) (!((x2 < y1) || (x1 > y2)))
+/* Check if ranges [x1, x2] and [y1, y2] overlap */
+#define OVERLAP(x1, x2, y1, y2) (!((x2 < y1) || (x1 > y2)))
 
 
 
