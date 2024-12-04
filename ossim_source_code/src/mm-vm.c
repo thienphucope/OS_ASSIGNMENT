@@ -8,7 +8,8 @@
 #include "mm.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+#include <pthread.h>
+static pthread_mutex_t vmlock;
 /*enlist_vm_freerg_list - add new rg to freerg_list
  *@mm: memory region
  *@rg_elmt: new region
@@ -80,6 +81,7 @@ struct vm_rg_struct *get_symrg_byid(struct mm_struct *mm, int rgid)
 int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr)
 {
   /*Allocate at the toproof */
+  pthread_mutex_lock(&vmlock);//khoá vmlock nhớ tạo lock ở đầu
   struct vm_rg_struct rgnode;
 
   /* TODO: commit the vmaid */
@@ -93,7 +95,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     caller->mm->symrgtbl[rgid].vmaid = rgnode.vmaid;
 
     *alloc_addr = rgnode.rg_start;
-
+	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
 
@@ -102,24 +104,41 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   /* TODO retrive current vma if needed, current comment out due to compiler redundant warning*/
   /*Attempt to increate limit to get space */
   //struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
-
+  struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
 
   int inc_sz = PAGING_PAGE_ALIGNSZ(size);
   int inc_limit_ret;
+  
+  
+  
 
   /* TODO retrive old_sbrk if needed, current comment out due to compiler redundant warning*/
   //int old_sbrk = cur_vma->sbrk;
-
+  int old_sbrk = cur_vma->sbrk;
+  
+  
   /* TODO INCREASE THE LIMIT
    * inc_vma_limit(caller, vmaid, inc_sz)
    */
+  
   inc_vma_limit(caller, vmaid, inc_sz, &inc_limit_ret);
 
   /* TODO: commit the limit increment */
-
+  caller->mm->symrgtbl[rgid].rg_start = old_sbrk;
+  caller->mm->symrgtbl[rgid].rg_end = old_sbrk + size;
+  caller->mm->symrgtbl[rgid].vmaid = rgnode.vmaid;
   /* TODO: commit the allocation address 
   // *alloc_addr = ...
   */
+  
+  if (old_sbrk + size < cur_vma->vm_end) {
+    struct vm_rg_struct *remain_rg = init_vm_rg(old_sbrk + size, cur_vma->vm_end, rgnode.vmaid);
+    enlist_vm_freerg_list(caller->mm, remain_rg);
+  }
+  *alloc_addr = old_sbrk;
+  cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
+	pthread_mutex_unlock(&vmlock);
+  return 0;
 
   return 0;
 }
