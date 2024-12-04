@@ -170,17 +170,19 @@ int MEMPHY_get_freefp(struct memphy_struct *mp, int *retfpn)
  *  MEMPHY_dump - dump memory content for tracing
  *  @mp: memphy struct
  */
-int MEMPHY_dump(struct memphy_struct *mp)
+int MEMPHY_dump(struct memphy_struct * mp)
 {
-    if (mp == NULL || mp->storage == NULL) {
-        printf("Memory is not initialized.\n");
-        return -1;
+    /*TODO dump memphy contnt mp->storage 
+     *     for tracing the memory content
+     */
+    //dump in bit present
+    for(int i = 0; i< mp->maxsz; i++){
+      if(mp->storage[i]){
+         printf("%08x\n", mp->storage[i]);
+       
+      }
     }
-
-    printf("Memory Dump:\n");
-    for (int i = 0; i < mp->maxsz; i++) {
-        printf("Address %02X: %02X\n", i, mp->storage[i]);
-    }
+    
     return 0;
 }
 
