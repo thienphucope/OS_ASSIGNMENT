@@ -179,7 +179,7 @@ int MEMPHY_dump(struct memphy_struct *mp)
 
     printf("Memory Dump:\n");
     for (int i = 0; i < mp->maxsz; i++) {
-        printf("Address %d: %02X\n", i, mp->storage[i]);
+        printf("Address %02X: %02X\n", i, mp->storage[i]);
     }
     return 0;
 }
