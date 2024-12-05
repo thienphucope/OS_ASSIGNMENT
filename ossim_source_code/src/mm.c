@@ -96,7 +96,7 @@ int vmap_page_range(struct pcb_t *caller, // process call
     ret_rg->vmaid = ... */
     ret_rg->rg_start = addr; 
     ret_rg->rg_end = addr + pgnum * PAGING_PAGESZ;
-
+    ret_rg->vmaid = caller->mm->mmap->vm_id; // Lấy ID vùng nhớ ảo từ tiến trình
     fpit->fp_next = frames; 
 
     /* TODO map range of frame to address space 
