@@ -44,27 +44,39 @@ void init_scheduler(void) {
  *  State representation   prio = 0 .. MAX_PRIO, curr_slot = 0..(MAX_PRIO - prio)
  */
 struct pcb_t * get_mlq_proc(void) {
-	struct pcb_t * proc = NULL;
-	/*TODO: get a process from PRIORITY [ready_queue].
-	 * Remember to use lock to protect the queue.
-	 * */
-	pthread_mutex_lock(&queue_lock);
+    struct pcb_t * proc = NULL;
+    pthread_mutex_lock(&queue_lock);
+    
     int prio;
-    for(prio = 0; prio < MAX_PRIO; prio++){
-    	if (empty(&mlq_ready_queue[prio]) ) {
-			slot[prio] = MAX_PRIO - prio;
-			continue;
-	}
-	
-	proc = dequeue(&mlq_ready_queue[prio]);
-	slot[prio]--;
-	if(slot[prio] <= 0){
-		slot[prio] = MAX_PRIO + prio;
-	}
-	break;
+    int all_slots_zero = 1;  // Giả định tất cả slot đều về 0
+
+    // Kiểm tra trạng thái slot của tất cả các queue
+    for (prio = 0; prio < MAX_PRIO; prio++) {
+        if (slot[prio] > 0) {
+            all_slots_zero = 0;  // Còn slot chưa về 0
+            break;
+        }
     }
+
+    // Chỉ reset khi TẤT CẢ slot về 0
+    if (all_slots_zero) {
+        for (prio = 0; prio < MAX_PRIO; prio++) {
+            slot[prio] = MAX_PRIO - prio;  // Reset slot ban đầu
+        }
+    }
+
+    // Tìm queue có process để xử lý
+    for (prio = 0; prio < MAX_PRIO; prio++) {
+        // Chỉ xử lý khi queue không rỗng VÀ CÒN SLOT
+        if (!empty(&mlq_ready_queue[prio]) && slot[prio] > 0) {
+            proc = dequeue(&mlq_ready_queue[prio]);
+            slot[prio]--;
+            break;  // Chỉ break khi tìm được process
+        }
+    }
+    
     pthread_mutex_unlock(&queue_lock);
-	return proc;	
+    return proc;    
 }
 
 void put_mlq_proc(struct pcb_t * proc) {
