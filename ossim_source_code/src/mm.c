@@ -96,13 +96,19 @@ int vmap_page_range(struct pcb_t *caller, // process call
   //ret_rg->rg_start = ...
   //ret_rg->vmaid = ...
   */
+  ret_rg->rg_start = addr;
+  ret_rg->rg_end = addr + (pgnum * PAGING_PAGESZ);
 
   fpit->fp_next = frames;
 
   /* TODO map range of frame to address space 
    *      in page table pgd in caller->mm
    */
-
+  for (pgit = 0; pgit < pgnum; pgit++) {
+    uint32_t *pte = &caller->mm->pgd[pgn + pgit];
+    pte_set_fpn(pte, frames->fpn);
+    frames = frames->fp_next;
+  }
    /* Tracking for later page replacement activities (if needed)
     * Enqueue new usage page */
    enlist_pgn_node(&caller->mm->fifo_pgn, pgn+pgit);
@@ -132,8 +138,12 @@ int alloc_pages_range(struct pcb_t *caller, int req_pgnum, struct framephy_struc
   {
     if(MEMPHY_get_freefp(caller->mram, &fpn) == 0)
    {
-     
-   } else {  // ERROR CODE of obtaining somes but not enough frames
+     struct framephy_struct *new_frame = malloc(sizeof(struct framephy_struct));
+      new_frame->fpn = fpn;
+      new_frame->fp_next = *frm_lst;
+      *frm_lst = new_frame;
+   } else { 
+    return -1; // ERROR CODE of obtaining somes but not enough frames
    } 
  }
 
@@ -229,7 +239,7 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
 
   /* TODO update VMA0 next */
   // vma0->next = ...
-
+  vma0->vm_next = vma1;
   /* TODO: update one vma for HEAP */
   // vma1->vm_id = ...
   // vma1->vm_start = ...
@@ -238,6 +248,13 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
   // enlist_vm_rg_node(&vma1...)
   // vma1->vm_next
   // enlist_vm_rg_node(&vma1->vm_freerg_list,...)
+  vma1->vm_id = 1;
+  vma1->vm_start = vma0->vm_end + PAGING_PAGESZ;
+  vma1->vm_end = vma1->vm_start + (PAGING_PAGESZ * 10);
+  vma1->sbrk = vma1->vm_start;
+  struct vm_rg_struct *heap_rg = init_vm_rg(vma1->vm_start, vma1->vm_end, 1);
+  enlist_vm_rg_node(&vma1->vm_freerg_list, heap_rg);
+  vma1->vm_next = NULL;
 
   /* Point vma owner backward */
   vma0->vm_mm = mm; 
@@ -245,7 +262,7 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
 
   /* TODO: update mmap */
   //mm->mmap = ...
-
+  mm->mmap = vma0;
   return 0;
 }
 
