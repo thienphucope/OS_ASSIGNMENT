@@ -159,8 +159,8 @@ int __free(struct pcb_t *caller, int rgid)
   // Dummy initialization for avoding compiler dummay warning
   // in incompleted TODO code rgnode will overwrite through implementing
   // the manipulation of rgid later
-  rgnode->vmaid = 0;  //dummy initialization
-  rgnode->vmaid = 1;  //dummy initialization
+  // rgnode->vmaid = 0;  //dummy initialization
+  // rgnode->vmaid = 1;  //dummy initialization
 
   if(rgid < 0 || rgid > PAGING_MAX_SYMTBL_SZ)
     return -1;
