@@ -547,24 +547,55 @@ int inc_vma_limit(struct pcb_t *caller, int vmaid, int inc_sz, int* inc_limit_re
  *@pgn: return page number
  *
  */
+// int find_victim_page(struct mm_struct *mm, int *retpgn) 
+// {
+//   struct pgn_t *pg = mm->fifo_pgn;
+
+//   /* TODO: Implement the theorical mechanism to find the victim page */
+//   if(!pg){
+//     return -1;
+//   }
+//   while(pg->pg_next->pg_next != NULL){
+//     pg = pg->pg_next;
+//   }
+//   *retpgn = pg->pg_next->pgn;
+//   mm->fifo_pgn = pg;
+//   pg = pg->pg_next;
+  
+//   //free(pg);
+
+//   return 0;
+// }
+
 int find_victim_page(struct mm_struct *mm, int *retpgn) 
 {
-  struct pgn_t *pg = mm->fifo_pgn;
+    struct pgn_t *pg = mm->fifo_pgn;
 
-  /* TODO: Implement the theorical mechanism to find the victim page */
-  if(!pg){
-    return -1;
-  }
-  while(pg->pg_next->pg_next != NULL){
-    pg = pg->pg_next;
-  }
-  *retpgn = pg->pg_next->pgn;
-  mm->fifo_pgn = pg;
-  pg = pg->pg_next;
-  
-  //free(pg);
+    /* Nếu danh sách rỗng, không tìm được victim page */
+    if (!pg) {
+        return -1;
+    }
 
-  return 0;
+    /* Nếu danh sách chỉ có một phần tử */
+    if (!pg->pg_next) {
+        *retpgn = pg->pgn;
+        mm->fifo_pgn = NULL;  // Danh sách rỗng sau khi xóa
+        free(pg);
+        return 0;
+    }
+
+    /* Duyệt đến phần tử áp chót */
+    while (pg->pg_next->pg_next != NULL) {
+        pg = pg->pg_next;
+    }
+
+    /* Xóa phần tử cuối cùng */
+    struct pgn_t *victim = pg->pg_next;
+    *retpgn = victim->pgn;
+    pg->pg_next = NULL;  // Ngắt liên kết đến node cuối
+    free(victim);        // Giải phóng node cuối
+
+    return 0;
 }
 
 /*get_free_vmrg_area - get a free vm region
