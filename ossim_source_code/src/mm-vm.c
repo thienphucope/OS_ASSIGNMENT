@@ -184,6 +184,11 @@ int pgalloc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 {
   int addr;
 
+#ifdef PAGETBL_DUMP
+  print_pgtbl(proc, 0, -1); //print max TBL
+#endif
+
+
   /* By default using vmaid = 0 */
   return __alloc(proc, 0, reg_index, size, &addr);
 }
@@ -197,6 +202,10 @@ int pgmalloc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 {
   int addr;
 
+#ifdef PAGETBL_DUMP
+  print_pgtbl(proc, 0, -1); //print max TBL
+#endif
+
   /* By default using vmaid = 1 */
   return __alloc(proc, 1, reg_index, size, &addr);
 }
@@ -209,6 +218,11 @@ int pgmalloc(struct pcb_t *proc, uint32_t size, uint32_t reg_index)
 
 int pgfree_data(struct pcb_t *proc, uint32_t reg_index)
 {
+
+#ifdef PAGETBL_DUMP
+  print_pgtbl(proc, 0, -1); //print max TBL
+#endif
+
    return __free(proc, reg_index);
 }
 
