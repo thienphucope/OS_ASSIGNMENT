@@ -91,22 +91,12 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
 
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0)
   {
-    if (vmaid == 1)  // Heap segment: allocate downwards
-    {
-        // Allocate from the end of the free region
-        caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_end - size;
-        caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
+    caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
+    caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
 
-        *alloc_addr = caller->mm->symrgtbl[rgid].rg_start;
-    }
-    else  // Data segment: allocate upwards (original behavior)
-    {
-        caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
-        caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_start + size;
+    caller->mm->symrgtbl[rgid].vmaid = vmaid;
 
-        *alloc_addr = rgnode.rg_start;
-    }
-    
+    *alloc_addr = rgnode.rg_start;
     // Print the address allocated via sbrk or malloc
     printf("Allocated address: %p\n", (void *)rgnode.rg_start);
     struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid); // Khai báo cur_vma
@@ -621,6 +611,64 @@ int find_victim_page(struct mm_struct *mm, int *retpgn)
  *@size: allocated size 
  *
  */
+// int get_free_vmrg_area(struct pcb_t *caller, int vmaid, int size, struct vm_rg_struct *newrg)
+// {
+//   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
+
+//   struct vm_rg_struct *rgit = cur_vma->vm_freerg_list;
+
+//   if (rgit == NULL)
+//     return -1;
+
+//   /* Probe unintialized newrg */
+//   newrg->rg_start = newrg->rg_end = -1;
+
+//   /* Traverse on list of free vm region to find a fit space */
+//   while (rgit != NULL && rgit->vmaid == vmaid)
+//   {
+//     if (rgit->rg_start + size <= rgit->rg_end)
+//     { /* Current region has enough space */
+//       newrg->rg_start = rgit->rg_start;
+//       newrg->rg_end = rgit->rg_start + size;
+
+//       /* Update left space in chosen region */
+//       if (rgit->rg_start + size < rgit->rg_end)
+//       {
+//         rgit->rg_start = rgit->rg_start + size;
+//       }
+//       else
+//       { /*Use up all space, remove current node */
+//         /*Clone next rg node */
+//         struct vm_rg_struct *nextrg = rgit->rg_next;
+
+//         /*Cloning */
+//         if (nextrg != NULL)
+//         {
+//           rgit->rg_start = nextrg->rg_start;
+//           rgit->rg_end = nextrg->rg_end;
+
+//           rgit->rg_next = nextrg->rg_next;
+
+//           free(nextrg);
+//         }
+//         else
+//         { /*End of free list */
+//           rgit->rg_start = rgit->rg_end;	//dummy, size 0 region
+//           rgit->rg_next = NULL;
+//         }
+//       }
+//     }
+//     else
+//     {
+//       rgit = rgit->rg_next;	// Traverse next rg
+//     }
+//   }
+
+//  if(newrg->rg_start == -1) // new region not found
+//    return -1;
+
+//  return 0;
+// }
 int get_free_vmrg_area(struct pcb_t *caller, int vmaid, int size, struct vm_rg_struct *newrg)
 {
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
@@ -630,54 +678,84 @@ int get_free_vmrg_area(struct pcb_t *caller, int vmaid, int size, struct vm_rg_s
   if (rgit == NULL)
     return -1;
 
-  /* Probe unintialized newrg */
+  /* Probe uninitialized newrg */
   newrg->rg_start = newrg->rg_end = -1;
 
   /* Traverse on list of free vm region to find a fit space */
   while (rgit != NULL && rgit->vmaid == vmaid)
   {
-    if (rgit->rg_start + size <= rgit->rg_end)
-    { /* Current region has enough space */
-      newrg->rg_start = rgit->rg_start;
-      newrg->rg_end = rgit->rg_start + size;
+    if (vmaid == 0)  // Normal allocation (heap go-up from 0)
+    {
+      if (rgit->rg_start + size <= rgit->rg_end)
+      { /* Current region has enough space */
+        newrg->rg_start = rgit->rg_start;
+        newrg->rg_end = rgit->rg_start + size;
 
-      /* Update left space in chosen region */
-      if (rgit->rg_start + size < rgit->rg_end)
-      {
-        rgit->rg_start = rgit->rg_start + size;
-      }
-      else
-      { /*Use up all space, remove current node */
-        /*Clone next rg node */
-        struct vm_rg_struct *nextrg = rgit->rg_next;
-
-        /*Cloning */
-        if (nextrg != NULL)
+        /* Update left space in chosen region */
+        if (rgit->rg_start + size < rgit->rg_end)
         {
-          rgit->rg_start = nextrg->rg_start;
-          rgit->rg_end = nextrg->rg_end;
-
-          rgit->rg_next = nextrg->rg_next;
-
-          free(nextrg);
+          rgit->rg_start = rgit->rg_start + size;
         }
         else
-        { /*End of free list */
-          rgit->rg_start = rgit->rg_end;	//dummy, size 0 region
-          rgit->rg_next = NULL;
+        { /* Use up all space, remove current node */
+          struct vm_rg_struct *nextrg = rgit->rg_next;
+          if (nextrg != NULL)
+          {
+            rgit->rg_start = nextrg->rg_start;
+            rgit->rg_end = nextrg->rg_end;
+            rgit->rg_next = nextrg->rg_next;
+            free(nextrg);
+          }
+          else
+          { /* End of free list */
+            rgit->rg_start = rgit->rg_end; // dummy, size 0 region
+            rgit->rg_next = NULL;
+          }
         }
+        return 0;
+      }
+    }
+    else if (vmaid == 1)  // Heap go-down from 1024
+    {
+      if (rgit->rg_end <= 1024 && (rgit->rg_start + size <= rgit->rg_end))
+      {
+        newrg->rg_start = rgit->rg_end - size;
+        newrg->rg_end = rgit->rg_end;
+
+        /* Update left space in chosen region */
+        if (newrg->rg_start > rgit->rg_start)
+        {
+          rgit->rg_end = newrg->rg_start;  // Shrink the free region
+        }
+        else
+        { /* Use up all space, remove current node */
+          struct vm_rg_struct *nextrg = rgit->rg_next;
+          if (nextrg != NULL)
+          {
+            rgit->rg_start = nextrg->rg_start;
+            rgit->rg_end = nextrg->rg_end;
+            rgit->rg_next = nextrg->rg_next;
+            free(nextrg);
+          }
+          else
+          { /* End of free list */
+            rgit->rg_start = rgit->rg_end;  // dummy, size 0 region
+            rgit->rg_next = NULL;
+          }
+        }
+        return 0;
       }
     }
     else
     {
-      rgit = rgit->rg_next;	// Traverse next rg
+      rgit = rgit->rg_next;  // Traverse next rg
     }
   }
 
- if(newrg->rg_start == -1) // new region not found
-   return -1;
+  if (newrg->rg_start == -1)  // new region not found
+    return -1;
 
- return 0;
+  return 0;
 }
 
 //#endif
