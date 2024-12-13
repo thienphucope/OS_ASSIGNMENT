@@ -91,12 +91,22 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
 
   if (get_free_vmrg_area(caller, vmaid, size, &rgnode) == 0)
   {
-    caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
-    caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end - size;
+    if (vmaid == 1)  // Heap segment: allocate downwards
+    {
+        // Allocate from the end of the free region
+        caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_end - size;
+        caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_end;
 
-    caller->mm->symrgtbl[rgid].vmaid = vmaid;
+        *alloc_addr = caller->mm->symrgtbl[rgid].rg_start;
+    }
+    else  // Data segment: allocate upwards (original behavior)
+    {
+        caller->mm->symrgtbl[rgid].rg_start = rgnode.rg_start;
+        caller->mm->symrgtbl[rgid].rg_end = rgnode.rg_start + size;
 
-    *alloc_addr = rgnode.rg_start;
+        *alloc_addr = rgnode.rg_start;
+    }
+    
     // Print the address allocated via sbrk or malloc
     printf("Allocated address: %p\n", (void *)rgnode.rg_start);
     struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid); // Khai báo cur_vma
