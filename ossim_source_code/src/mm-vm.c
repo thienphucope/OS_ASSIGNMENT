@@ -98,6 +98,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     caller->mm->symrgtbl[rgid].vmaid = vmaid;
 
     *alloc_addr = rgnode.rg_start;
+    printf("In address: %ld", rgnode.rg_start);
 	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
@@ -140,6 +141,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   }
   *alloc_addr = old_sbrk;
   cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
+  printf("In address: %ld", rgnode.rg_start);
 	pthread_mutex_unlock(&vmlock);
   return 0;
 
