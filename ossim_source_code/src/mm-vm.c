@@ -99,6 +99,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
 
     *alloc_addr = rgnode.rg_start;
     printf("In address: %ld\n", rgnode.rg_start);
+    printf("In address: %ld\n", rgnode.rg_end);
 	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
@@ -141,7 +142,8 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   }
   *alloc_addr = old_sbrk;
   cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
-  printf("In address extended: %ld\n", rgnode.rg_start);
+  printf("In address extended: %ld\n", old_sbrk);
+  printf("In address extended: %ld\n", old_sbrk + size);
 	pthread_mutex_unlock(&vmlock);
   return 0;
 
