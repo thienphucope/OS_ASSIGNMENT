@@ -100,7 +100,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     // Print the address allocated via sbrk or malloc
     printf("Allocated address: %p\n", (void *)rgnode.rg_start);
     struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid); // Khai báo cur_vma
-    printf("Current sbrk value: %ld\n", cur_vma->sbrk); // In ra giá trị sbrk hiện tại
+    printf("Current sbrk value: %ld\n", rgnode.rg_start); // In ra giá trị sbrk hiện tại
 	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
