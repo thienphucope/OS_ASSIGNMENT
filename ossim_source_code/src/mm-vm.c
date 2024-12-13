@@ -97,6 +97,8 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     caller->mm->symrgtbl[rgid].vmaid = vmaid;
 
     *alloc_addr = rgnode.rg_start;
+    // Print the address allocated via sbrk or malloc
+    printf("Allocated address: %p\n", (void *)rgnode.rg_start);
 	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
