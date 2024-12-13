@@ -280,7 +280,7 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
     vma1->sbrk = vma1->vm_start;
 
     // Khởi tạo danh sách vùng trống cho VMA1
-    struct vm_rg_struct *first_rg1 = init_vm_rg(vma1->vm_start, vma1->vm_end - 512, vma1->vm_id);
+    struct vm_rg_struct *first_rg1 = init_vm_rg(vma1->vm_end - 512, vma1->vm_start, vma1->vm_id);
     enlist_vm_rg_node(&vma1->vm_freerg_list, first_rg1);
 
     // Liên kết VMA0 và VMA1 thành một danh sách liên kết
