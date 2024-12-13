@@ -260,7 +260,7 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
     vma0->sbrk = vma0->vm_start; // Điểm break (giới hạn trên của heap) bằng vm_start
 
     // Khởi tạo danh sách vùng trống cho VMA0
-    struct vm_rg_struct *first_rg0 = init_vm_rg(vma0->vm_start, vma0->vm_end + 512, vma0->vm_id);
+    struct vm_rg_struct *first_rg0 = init_vm_rg(vma0->vm_start, vma0->vm_end, vma0->vm_id);
     enlist_vm_rg_node(&vma0->vm_freerg_list, first_rg0); // Thêm vùng này vào danh sách trống
     /* TODO update VMA0 next */
   // vma0->next = ...
@@ -275,12 +275,12 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
   // enlist_vm_rg_node(&vma1->vm_freerg_list,...)
     /* Khởi tạo VMA1 cho vùng HEAP */
     vma1->vm_id = 1; // ID cho vùng HEAP
-    vma1->vm_start = vma0->vm_end + 4*PAGING_PAGESZ; // Bắt đầu sau vùng DATA (giả sử heap bắt đầu sau một trang)
+    vma1->vm_start = vma0->vm_end + PAGING_PAGESZ; // Bắt đầu sau vùng DATA (giả sử heap bắt đầu sau một trang)
     vma1->vm_end = vma1->vm_start; // Ban đầu, HEAP trống
     vma1->sbrk = vma1->vm_start;
 
     // Khởi tạo danh sách vùng trống cho VMA1
-    struct vm_rg_struct *first_rg1 = init_vm_rg(vma1->vm_end - 512, vma1->vm_start, vma1->vm_id);
+    struct vm_rg_struct *first_rg1 = init_vm_rg(vma1->vm_start, vma1->vm_end, vma1->vm_id);
     enlist_vm_rg_node(&vma1->vm_freerg_list, first_rg1);
 
     // Liên kết VMA0 và VMA1 thành một danh sách liên kết
