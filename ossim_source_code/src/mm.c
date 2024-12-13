@@ -275,7 +275,7 @@ int init_mm(struct mm_struct *mm, struct pcb_t *caller)
   // enlist_vm_rg_node(&vma1->vm_freerg_list,...)
     /* Khởi tạo VMA1 cho vùng HEAP */
     vma1->vm_id = 1; // ID cho vùng HEAP
-    vma1->vm_start = vma0->vm_end + PAGING_PAGESZ; // Bắt đầu sau vùng DATA (giả sử heap bắt đầu sau một trang)
+    vma1->vm_start = vma0->vm_end + 4*PAGING_PAGESZ; // Bắt đầu sau vùng DATA (giả sử heap bắt đầu sau một trang)
     vma1->vm_end = vma1->vm_start; // Ban đầu, HEAP trống
     vma1->sbrk = vma1->vm_start;
 
