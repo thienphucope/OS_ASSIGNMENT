@@ -82,6 +82,7 @@ struct vm_rg_struct *get_symrg_byid(struct mm_struct *mm, int rgid)
  */
 int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr)
 {
+  printf("Alloc: %p\n", alloc_addr);
   /*Allocate at the toproof */
   pthread_mutex_lock(&vmlock);//khoá vmlock nhớ tạo lock ở đầu
   struct vm_rg_struct rgnode;
@@ -97,10 +98,6 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
     caller->mm->symrgtbl[rgid].vmaid = vmaid;
 
     *alloc_addr = rgnode.rg_start;
-    // Print the address allocated via sbrk or malloc
-    
-    
-    printf("Allocated Address: %ld\n", rgnode.rg_start); // In ra giá trị sbrk hiện tại
 	  pthread_mutex_unlock(&vmlock);
     return 0;
   }
@@ -143,10 +140,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
   }
   *alloc_addr = old_sbrk;
   cur_vma->sbrk = old_sbrk + size;  // Update sbrk to point to the end of the newly allocated region
-  
-  
-	
-  pthread_mutex_unlock(&vmlock);
+	pthread_mutex_unlock(&vmlock);
   return 0;
 
   
@@ -161,6 +155,7 @@ int __alloc(struct pcb_t *caller, int vmaid, int rgid, int size, int *alloc_addr
  */
 int __free(struct pcb_t *caller, int rgid)
 {
+  printf("free\n");
   //struct vm_rg_struct rgnode;
   struct vm_rg_struct *rgnode;
   // Dummy initialization for avoding compiler dummay warning
@@ -404,12 +399,12 @@ int __write(struct pcb_t *caller, int rgid, int offset, BYTE value)
   int vmaid = currg->vmaid;
 
   struct vm_area_struct *cur_vma = get_vma_by_num(caller->mm, vmaid);
-  
+
   if(currg == NULL || cur_vma == NULL) /* Invalid memory identify */
 	  return -1;
 
   pg_setval(caller->mm, currg->rg_start + offset, value, caller);
-
+  MEMPHY_dump(caller->mram);
   return 0;
 }
 
@@ -427,7 +422,7 @@ int pgwrite(
 #endif
   MEMPHY_dump(proc->mram);
 #endif
-
+  
   return __write(proc, destination, offset, data);
 }
 

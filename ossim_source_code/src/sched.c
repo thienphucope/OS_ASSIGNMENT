@@ -13,7 +13,7 @@ static pthread_mutex_t queue_lock;
 static struct queue_t mlq_ready_queue[MAX_PRIO];
 static int slot[MAX_PRIO];
 #endif
-
+	
 int queue_empty(void) {
 #ifdef MLQ_SCHED
 	unsigned long prio;
@@ -56,14 +56,14 @@ struct pcb_t * get_mlq_proc(void) {
     	if (empty(&mlq_ready_queue[prio]) ) {
 			slot[prio] = MAX_PRIO - prio;
 			continue;
-	}
+		}
 	
-	proc = dequeue(&mlq_ready_queue[prio]);
-	slot[prio]--;
-	if(slot[prio] <= 0){
-		slot[prio] = MAX_PRIO - prio;
-	}
-	break;
+		proc = dequeue(&mlq_ready_queue[prio]);
+		slot[prio]--;
+		if(slot[prio] <= 0){
+			slot[prio] = MAX_PRIO - prio;
+		}
+		break;
     }
     pthread_mutex_unlock(&queue_lock);
 	return proc;	
