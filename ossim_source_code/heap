@@ -1,0 +1,35 @@
+6 1 1
+1024 16777216 0 0 0 4194304
+0 pos 0
+
+
+1 4
+malloc 256 0
+free 0
+alloc 200 0
+free 0
+
+
+ld_routine
+	Loaded a process at input/proc/pos, PID: 1 PRIO: 0
+	CPU 0: Dispatched process  1
+print_pgtbl: 0 - 0
+Alloc: 0x7e49a8bffe34
+In address: 768
+In address: 1024
+print_pgtbl: 0 - 0
+free
+Time slot   1
+Time slot   2
+print_pgtbl: 0 - 0
+Alloc: 0x7e49a8bffe34
+In address extended: 0
+In address extended: 200
+Time slot   3
+print_pgtbl: 0 - 256
+00000000: 80000000
+free
+Time slot   4
+	CPU 0: Processed  1 has finished
+	CPU 0 stopped
+

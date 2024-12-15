@@ -1,0 +1,116 @@
+6 1 1
+1024 16777216 0 0 0 4194304
+0 override 0
+
+
+1 11
+alloc 256 2
+alloc 256 1
+alloc 256 3
+alloc 512 0
+write 20 2 200
+read 2 200 20
+write 30 2 200
+read 2 200 20
+free 1
+free 2
+free 3
+free 0
+
+
+Time slot   0
+ld_routine
+	Loaded a process at input/proc/override, PID: 1 PRIO: 0
+	CPU 0: Dispatched process  1
+print_pgtbl: 0 - 0
+Alloc: 0x75ab271ffe34
+In address extended: 0
+In address extended: 256
+Time slot   1
+print_pgtbl: 0 - 256
+00000000: 80000000
+Alloc: 0x75ab271ffe34
+In address extended: 256
+In address extended: 512
+Time slot   2
+print_pgtbl: 0 - 512
+00000000: 80000000
+00000004: 80000001
+Alloc: 0x75ab271ffe34
+In address extended: 512
+In address extended: 768
+Time slot   3
+print_pgtbl: 0 - 768
+00000000: 80000000
+00000004: 80000001
+00000008: 80000002
+Alloc: 0x75ab271ffe34
+In address extended: 768
+In address extended: 1280
+Time slot   4
+write region=2 offset=200 value=20
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+00000014
+Time slot   5
+read region=2 offset=200 value=20
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+00000014
+Time slot   6
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+write region=2 offset=200 value=30
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+00000014
+0000001e
+Time slot   7
+read region=2 offset=200 value=30
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+0000001e
+Time slot   8
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+free
+Time slot   9
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+free
+Time slot  10
+print_pgtbl: 0 - 1280
+00000000: c0000000
+00000004: 80000001
+00000008: 80000002
+00000012: 80000000
+00000016: 80000000
+free
+Time slot  11
+	CPU 0: Processed  1 has finished
+	CPU 0 stopped
+

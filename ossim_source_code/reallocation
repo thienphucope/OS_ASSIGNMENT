@@ -1,0 +1,75 @@
+6 1 1
+1024 16777216 0 0 0 4194304
+0 reallocation 0
+
+
+1 9
+alloc 100 2
+alloc 100 3
+write 20 3 100
+free 3
+alloc 200 1
+write 30 1 100
+read 1 100
+free 1
+free 2
+
+
+Time slot   0
+ld_routine
+	Loaded a process at input/proc/reallocation, PID: 1 PRIO: 0
+Time slot   1
+	CPU 0: Dispatched process  1
+print_pgtbl: 0 - 0
+Alloc: 0x7c5ca9dffe34
+In address extended: 0
+In address extended: 100
+Time slot   2
+print_pgtbl: 0 - 256
+00000000: 80000000
+Alloc: 0x7c5ca9dffe34
+In address: 100
+In address: 200
+Time slot   3
+write region=3 offset=100 value=20
+print_pgtbl: 0 - 256
+00000000: 80000000
+00000014
+Time slot   4
+print_pgtbl: 0 - 256
+00000000: 80000000
+free
+Time slot   5
+print_pgtbl: 0 - 256
+00000000: 80000000
+Alloc: 0x7c5ca9dffe34
+In address extended: 100
+In address extended: 300
+Time slot   6
+write region=1 offset=100 value=30
+print_pgtbl: 0 - 512
+00000000: 80000000
+00000004: 80000001
+00000014
+0000001e
+Time slot   7
+	CPU 0: Put process  1 to run queue
+	CPU 0: Dispatched process  1
+read region=1 offset=100 value=30
+print_pgtbl: 0 - 512
+00000000: 80000000
+00000004: 80000001
+0000001e
+Time slot   8
+print_pgtbl: 0 - 512
+00000000: 80000000
+00000004: 80000001
+free
+Time slot   9
+print_pgtbl: 0 - 512
+00000000: 80000000
+00000004: 80000001
+free
+Time slot  10
+	CPU 0: Processed  1 has finished
+	CPU 0 stopped
